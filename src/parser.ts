@@ -24,7 +24,7 @@ export default class Parser {
   private parse_lambda() {
     return {
       type: "lambda",
-      vars: this.delimited("(", ")", ",", this.parse_varname),
+      vars: this.delimited("(", ")", ",", () => this.parse_varname()),
       body: this.parse_expression()
     }
   }
@@ -77,7 +77,7 @@ export default class Parser {
     return {
       type: "call",
       func,
-      args: this.delimited("(", ")", ",", this.parse_expression)
+      args: this.delimited("(", ")", ",", () => this.parse_expression())
     };
   }
 
@@ -89,7 +89,7 @@ export default class Parser {
   }
 
   private parse_prog(): any {
-    const prog = this.delimited("{", "}", ";", this.parse_expression);
+    const prog = this.delimited("{", "}", ";", () => this.parse_expression());
     if (prog.length == 0) return { type: "bool", value: false };
     if (prog.length == 1) return prog[0];
     return { type: "prog", prog };
@@ -114,7 +114,7 @@ export default class Parser {
       const his_prec = PRECEDENCE[tok.value as string];
       if (his_prec > my_prec) {
         this.input.next();
-        const right = this.maybe_binary(this.parse_atom, his_prec);
+        const right = this.maybe_binary(this.parse_atom(), his_prec);
         const binary = {
           type: tok.value == "=" ? "assign" : "binary",
           operator: tok.value,
@@ -177,7 +177,6 @@ export default class Parser {
     else this.input.croak(`Expecting operator: "${op}"`);
   }
 }
-
 
 export interface IF {
   type: string;
