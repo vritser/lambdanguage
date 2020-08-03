@@ -1,0 +1,25 @@
+{
+  "name": "lambdanguage",
+  "version": "1.0.0",
+  "description": "λanguage",
+  "main": "gulpfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vritser/lambdanguage.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vritser/lambdanguage/issues"
+  },
+  "homepage": "https://github.com/vritser/lambdanguage#readme",
+  "dependencies": {
+    "del": "^5.1.0",
+    "gulp": "^4.0.2",
+    "gulp-typescript": "^6.0.0-alpha.1",
+    "typescript": "^3.9.7"
+  }
+}
