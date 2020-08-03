@@ -1,2 +1,2 @@
-# lambdanguage
+# λanguage
 λanguage
