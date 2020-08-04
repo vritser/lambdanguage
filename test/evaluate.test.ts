@@ -35,4 +35,13 @@ print(car(cdr(cdr(cdr(cdr(x))))));
     evaluate(ast, globalEnv);
   });
 
+
+  it('closure', () => {
+    const code = `sum = λ(x) λ(y) x + y; sum(2)(3);`;
+    const ast = new Parser(new TokenStream(new InputStream(code))).parse();
+    const sum = evaluate(ast, globalEnv);
+    expect(sum).to.eq(5);
+  });
+
+
 });
