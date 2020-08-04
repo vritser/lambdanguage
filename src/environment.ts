@@ -38,12 +38,12 @@ export default class Environment {
     if (!scope && this.parent)
       throw new Error("Undefined variable ${name}");
 
-    (scope || this).vars[name] = value;
+    return (scope || this).vars[name] = value;
   }
 
   // Creates (or shadows, or overwrites) a variable in the current scope.
   def(name: string, value: any) {
-    this.vars[name] = value;
+    return this.vars[name] = value;
   }
 
 }
