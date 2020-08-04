@@ -36,18 +36,15 @@ To build and run this app locally you will need a few things:
   #+begin_src sh
     git clone --depth=1 https://github.com/vritser/lambdanguage.git 
   #+end_src
-
 - Install dependencies
   #+begin_src sh
     cd lambdanguage
     npm install
   #+end_src
-
 - Build and run
   #+begin_src sh
     gulp build
   #+end_src
-
 - Testing
   #+begin_src sh
     npm run test
