@@ -135,7 +135,7 @@ export default class TokenStream {
   }
 
   private is_id_start(ch: string) {
-    return /[a-z_]/i.test(ch);
+    return /[a-zλ_]/i.test(ch);
   }
 
   private is_digit(ch: string): boolean {
@@ -148,7 +148,7 @@ export default class TokenStream {
 
 }
 
-const KEYWORDS = ` if then else lambda true false `;
+const KEYWORDS = ` if then else lambda λ true false `;
 
 export interface IToken {
   type: string;
