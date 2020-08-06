@@ -4,7 +4,7 @@
   "description": "λanguage",
   "main": "gulpfile.js",
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha --exit --require ts-node/register --colors test/**/*.ts"
+    "test": "./node_modules/mocha/bin/mocha --exit --require ts-node/register --colors test/**/*.ts --timeout=10000"
   },
   "repository": {
     "type": "git",

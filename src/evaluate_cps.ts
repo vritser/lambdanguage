@@ -1,5 +1,7 @@
 import Environment from "./environment";
 
+let MAX_STACK_LEN = 0;
+
 export default function evaluate(exp: any, env: Environment, callback: any): any {
   switch (exp.type) {
     case "num":
@@ -15,15 +17,18 @@ export default function evaluate(exp: any, env: Environment, callback: any): any
     case "assign":
       if (exp.left.type != "var")
         throw new Error(`Cannot assign to ${JSON.stringify(exp.left)}`);
-      evaluate(exp.right, env, (right: any) => {
+      evaluate(exp.right, env, function CC(right: any) {
+        GUARD(CC, arguments);
         const ret = env.set(exp.left.value, right);
         callback(ret);
       })
       return;
 
     case "binary":
-      evaluate(exp.left, env, (left: any) => {
-        evaluate(exp.right, env, (right: any) => {
+      evaluate(exp.left, env, function CC(left: any) {
+        GUARD(CC, arguments);
+        evaluate(exp.right, env, function CC(right: any) {
+          GUARD(CC, arguments);
           callback(apply_op(exp.operator, left, right));
         });
       });
@@ -31,10 +36,12 @@ export default function evaluate(exp: any, env: Environment, callback: any): any
 
     case "let":
       (function loop(env: Environment, i: number) {
+        GUARD(loop, arguments);
         if (i < exp.vars.length) {
           const _var = exp.vars[i];
           if (_var.def) {
-            evaluate(_var.def, env, (value: any) => {
+            evaluate(_var.def, env, function CC(value: any) {
+              GUARD(CC, arguments);
               const scope = env.extend();
               scope.def(_var.name, value);
               loop(scope, i + 1);
@@ -55,7 +62,8 @@ export default function evaluate(exp: any, env: Environment, callback: any): any
       return;
 
     case "if":
-      evaluate(exp.cond, env, (cond: any) => {
+      evaluate(exp.cond, env, function CC(cond: any) {
+        GUARD(CC, arguments);
         if (cond) evaluate(exp.then, env, callback);
         else if (exp.else) evaluate(exp.else, env, callback);
         else callback(false);
@@ -64,8 +72,10 @@ export default function evaluate(exp: any, env: Environment, callback: any): any
 
     case "prog":
       (function loop(z: any, i: number) {
+        GUARD(loop, arguments);
         if (i < exp.prog.length) {
-          evaluate(exp.prog[i], env, (x: any) => {
+          evaluate(exp.prog[i], env, function CC(x: any) {
+            GUARD(CC, arguments);
             loop(x, i + 1);
           });
         } else {
@@ -75,10 +85,13 @@ export default function evaluate(exp: any, env: Environment, callback: any): any
       return;
 
     case "call":
-      evaluate(exp.func, env, (func: any) => {
+      evaluate(exp.func, env, function CC(func: any) {
+        GUARD(CC, arguments);
         (function loop(args: any[], i: number) {
+          GUARD(loop, arguments);
           if (i < exp.args.length) {
-            evaluate(exp.args[i], env, (arg: any) => {
+            evaluate(exp.args[i], env, function CC(arg: any) {
+              GUARD(CC, arguments);
               args[i + 1] = arg;
               loop(args, i + 1);
             });
@@ -135,15 +148,42 @@ export default function evaluate(exp: any, env: Environment, callback: any): any
     }
 
     function lambda(callback: any, ...args: any[]) {
+      GUARD(lambda, arguments);
       const params = exp.vars;
       const scope = env.extend();
-      for (let i = 0; i < params.length; i++) {
+      for (let i = 0; i < params.length; ++i) {
         scope.def(params[i], i < args.length ? args[i] : false);
       }
 
-      return evaluate(exp.body, scope, callback);
+      evaluate(exp.body, scope, callback);
     }
 
     return lambda;
+  }
+
+  function GUARD(func: Function, args: any) {
+    if (--MAX_STACK_LEN < 0) throw new Continuation(func, args);
+  }
+
+}
+
+export function Execute(func: Function, args: any[]) {
+  while (true) try {
+    MAX_STACK_LEN = 200;
+    return func.apply(null, args);
+  } catch (ex) {
+    if (ex instanceof Continuation)
+      func = ex.func, args = ex.args;
+    else throw ex;
+  }
+}
+
+class Continuation {
+  func: Function;
+  args: any[];
+
+  constructor(func: Function, args: any[]) {
+    this.func = func;
+    this.args = args;
   }
 }
