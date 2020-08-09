@@ -105,6 +105,8 @@ export default class TokenStream {
         escaped = false;
       } else if (ch == "\\") {
         escaped = true;
+      } else if (ch == end) {
+        break;
       } else {
         str += ch;
       }
