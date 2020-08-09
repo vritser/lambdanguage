@@ -13,6 +13,12 @@ describe('evaluate cps', () => {
     cb(false);
   });
 
+  globalEnv.def("CallCC", (cb: any, func: Function) => {
+    func(cb, function CC(_: any, ret: any) {
+      cb(ret);
+    });
+  });
+
   it('sum of 2 and 3 should be 5', () => {
     const code = `sum = λ(x, y) x + y; print(sum(2, 3)); sum(2, 3);`;
     const ast = new Parser(new TokenStream(new InputStream(code))).parse();
@@ -25,10 +31,42 @@ describe('evaluate cps', () => {
     Execute(evaluate, [ast, globalEnv, (sum: number) => expect(sum).to.eq(5)]);
   });
 
+  it('print string', () => {
+    const code = `print("hello world");`;
+    const ast = new Parser(new TokenStream(new InputStream(code))).parse();
+    Execute(evaluate, [ast, globalEnv, (sum: boolean) => expect(sum).to.false]);
+  });
+
   it('infinite recursion', () => {
     const code = `fib = λ(n) if n < 2 then n else fib(n - 1) + fib(n - 2); fib(30);`;
     const ast = new Parser(new TokenStream(new InputStream(code))).parse();
     Execute(evaluate, [ast, globalEnv, (sum: number) => expect(sum).to.eq(832040)]);
   });
+
+  it('intercept the current continuation', () => {
+    const code = `
+foo = λ(return) {
+  print("foo");
+  return("DONE");
+  print("bar");
+};
+
+CallCC(foo);
+  `;
+    const ast = new Parser(new TokenStream(new InputStream(code))).parse();
+    Execute(evaluate, [ast, globalEnv, (done: string) => expect(done).to.eq("DONE")]);
+  });
+
+  it('let block', () => {
+    const code = `
+let (a = 10, b = a + 5, c = b * 2, d) {
+  d = c * 5;
+  d * 2;
+};
+`;
+    const ast = new Parser(new TokenStream(new InputStream(code))).parse();
+
+    Execute(evaluate, [ast, globalEnv, (product: number) => expect(product).to.eq(300)]);
+  })
 
 });

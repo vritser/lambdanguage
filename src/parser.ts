@@ -64,6 +64,7 @@ export default class Parser {
         this.input.next();
         return this.parse_lambda();
       }
+      if (this.is_kw("let")) return this.parse_let();
 
       const tok = this.input.next();
       if (["var", "num", "str"].indexOf(tok.type) >= 0)
@@ -71,6 +72,33 @@ export default class Parser {
 
       this.unexpected();
     });
+  }
+
+  parse_let(): any {
+    this.skip_kw("let");
+    return {
+      type: "let",
+      vars: this.delimited("(", ")", ",", () => this.parse_def()),
+      body: this.parse_prog()
+    };
+  }
+
+  private parse_def(): any {
+    const left = this.input.next();
+    const tok = this.is_op();
+    if (tok) {
+      this.input.next();
+      const right = this.maybe_binary(this.parse_atom(), 0);
+
+      return {
+        name: left.value,
+        def: right
+      };
+    }
+
+    return {
+      name: left.value
+    };
   }
 
   private parse_call(func: string): any {

@@ -150,7 +150,7 @@ export default class TokenStream {
 
 }
 
-const KEYWORDS = ` if then else lambda λ true false `;
+const KEYWORDS = ` if then else lambda λ true false let `;
 
 export interface IToken {
   type: string;
