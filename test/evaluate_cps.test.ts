@@ -65,8 +65,38 @@ let (a = 10, b = a + 5, c = b * 2, d) {
 };
 `;
     const ast = new Parser(new TokenStream(new InputStream(code))).parse();
-
     Execute(evaluate, [ast, globalEnv, (product: number) => expect(product).to.eq(300)]);
-  })
+  });
+
+  it('backtracing', () => {
+    const code = `
+fail = lambda() false;
+guess = lambda(current) {
+  CallCC(lambda(k) {
+    let (prevFail = fail) {
+      fail = lambda() {
+        current = current + 1;
+        if current > 100 {
+          fail = prevFail;
+          fail();
+        } else {
+          k(current);
+        };
+      };
+      k(current);
+    };
+  });
+};
+
+a = guess(1);
+b = guess(a);
+if a * b == 84 {
+  print(a, " x ", b);
+};
+fail();
+`;
+    const ast = new Parser(new TokenStream(new InputStream(code))).parse();
+    Execute(evaluate, [ast, globalEnv, (result: boolean) => expect(result).to.false]);
+  });
 
 });
