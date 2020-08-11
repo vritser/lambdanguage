@@ -19,6 +19,8 @@ describe('evaluate cps', () => {
     });
   });
 
+  globalEnv.def("halt", () => { });
+
   it('sum of 2 and 3 should be 5', () => {
     const code = `sum = λ(x, y) x + y; print(sum(2, 3)); sum(2, 3);`;
     const ast = new Parser(new TokenStream(new InputStream(code))).parse();
@@ -98,5 +100,42 @@ fail();
     const ast = new Parser(new TokenStream(new InputStream(code))).parse();
     Execute(evaluate, [ast, globalEnv, (result: boolean) => expect(result).to.false]);
   });
+
+  it("throw and catch", () => {
+    const code = `
+throw = lambda() {
+  print("ERROR: No more catch handlers!");
+  halt();
+};
+
+catch = lambda(tag, func) {
+  CallCC(lambda(k) {
+    let (rethrow = throw, ret) {
+      throw = lambda(t, val) {
+        throw = rethrow;
+        if t == tag then k(val)
+        else throw(t, val);
+      };
+      ret = func();
+
+      throw = rethrow;
+      ret;
+    };
+  });
+};
+
+f = lambda() {
+  throw("foo", "EXIT");
+  print("not reached");
+};
+
+catch("foo", lambda() {
+  f();
+  print("not reached");
+});
+`;
+    const ast = new Parser(new TokenStream(new InputStream(code))).parse();
+    Execute(evaluate, [ast, globalEnv, (result: string) => expect(result).to.eq("EXIT")])
+  })
 
 });

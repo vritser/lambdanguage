@@ -74,7 +74,7 @@ export default class Parser {
     });
   }
 
-  parse_let(): any {
+  private parse_let(): any {
     this.skip_kw("let");
     return {
       type: "let",
